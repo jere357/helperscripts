@@ -32,6 +32,13 @@ def subscreen(videowriter, pixel_range, image):
     videowriter.write(image[pixel_range[1][0] : pixel_range[1][1], pixel_range[0][0] : pixel_range[0][1]])
     return
 """
+helper function s for extracting gray frames with pixel ranges from a single 4k frame, used in optical flow
+"""
+def fetch_grays(frame, pixel_ranges):
+    frames = []
+    [frames.append(frame[pixel_range[1][0] : pixel_range[1][1],pixel_range[0][0] : pixel_range[0][1]]) for pixel_range in pixel_ranges]
+    return frames
+"""
 lets say you slice the video into N subframes of (frame_cap) resolution name slice1,slice2..., sliceN
 the stitched vides gets stitched like this: slice1->slice2->...sliceN->next frame from original video->slice1,slice2... and so on.
 this order will be useful when creating the final canvas that is once again in 4k resoluiton
@@ -63,11 +70,58 @@ def stitch_video(filename, fourcc, frame_cap = (1000, 600), folder_name = 'stitc
     print("vrijeme za video 10s {} ".format(round(t2-t1,5)))
     videowriter.release()
     cap.release()
+
+def slice_video_optical_flow_fast(filename, fourcc, frame_cap = (1000,600), folder_name = 'sliced_videos', time_skip = 0, duration = 7):
+    video_folder_name = folder_name+ '/' + filename[:-4] + '_' + str(time_skip) + str(duration)
+    try:
+        os.mkdir(folder_name)
+    except OSError as error:
+        pass
+        #print(str(error) + " sliced videos folder already exists - irrelevant error")
+    try:
+        os.mkdir(video_folder_name)
+    except OSError as error:
+        pass
+        #print(str(error) + " video named subfolder already exists - irrelevant error")
+    cap = cv.VideoCapture(filename)
+    fourcc = cv.VideoWriter_fourcc(*'mp4v')
+    fps = int(cap.get(cv.CAP_PROP_FPS))
+    video_size = (int(cap.get(3)), int(cap.get(4)))
+    pixel_ranges = ranges(frame_cap, video_size)
+    cap.release()
+    videowriters = []
+    for counter, pixel_range in enumerate(pixel_ranges):
+        if math.floor(counter/10) == 0:
+            new_video_name = video_folder_name + '/' + filename[:-4] + 'SLICE0' + str(counter) + '_' + str(time_skip) + str(duration) + '.mp4'
+        else:
+            new_video_name = video_folder_name + '/' + filename[:-4] + 'SLICE' + str(counter) + '_' + str(time_skip) + str(duration) + '.mp4'
+        videowriters.append(cv.VideoWriter(new_video_name, fourcc, fps, frame_cap))
+    cap = cv.VideoCapture(filename)
+    cap.set(1, time_skip*fps)
+    t1 = time.time()
+    cnt=0
+    ret, frame = cap.read()
+    old_grays = fetch_grays(frame, pixel_ranges)
+    while cap.isOpened():
+        cnt += 1
+        if cnt == fps*duration and duration!=0:
+            break 
+        ret, frame = cap.read()
+        if(ret == False):
+            break
+        new_grays = fetch_grays(frame, pixel_ranges)
+        #primjeni optical flow
+        #triba pamtit trenutni frame i n-1. frame hmhm
+        old_grays = new_grays
+
+    
+    pass
+
 """
 this function behaves in the same way as slice_video but only applies the optical flow calculation to every frame. SLOW version atm
 """
 def slice_video_optical_flow(filename, fourcc, frame_cap = (1000,600), folder_name = 'sliced_videos', time_skip = 0, duration = 7):
-    print( folder_name + '/' + filename[:-4])
+    #print( folder_name + '/' + filename[:-4])
     try:
         os.mkdir(folder_name)
     except OSError as error:
