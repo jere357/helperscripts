@@ -15,11 +15,14 @@ def downscale_video(filename, folder_name):
         #folder alrdy exists - WHO CARES 
         pass
     command =  "ffmpeg -i " + folder_name + '/' + filename + " -filter:v scale=1000:-2 -c:v libx264 -crf 24 " + video_folder_name + '/' + filename[:-4] + '_lowres' + '.mp4'
+    #print(filename)
+    #print(command)
     a = subprocess.call(command, shell = True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
 if __name__ == "__main__":
-    folder = sys.argv[1]  
-    video_array = []  
+    #you have to pass the folder_name without / at the end; python3 ffmpegconverter.py myfolder/subfolder 
+    folder = sys.argv[1]
+    video_array = []
     [video_array.append(x) for x in os.listdir(folder) if x.lower().endswith(".mp4")]
     for video in tqdm(video_array):
         downscale_video(video, folder_name=folder)
