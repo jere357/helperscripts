@@ -9,16 +9,12 @@ import time
 import os
 from tqdm import tqdm
 import subprocess
-
 """
 assumed folder structure:
 maximo_api.py
-videos/video1.mp4
-videos/video2.MP4
+videos/ folder containing videos
 
 """
-
-
 def convert_video(filename, folder_name):
     video_folder_name = folder_name + '/' + folder_name + '_converted'
     try:
@@ -28,7 +24,6 @@ def convert_video(filename, folder_name):
         pass
     command =  "ffmpeg -i " + folder_name + '/' + filename + " -filter:v scale=1000:-2 -c:v libx264 -crf 17 " + video_folder_name + '/' + filename[:-4] + '.mp4'
     a = subprocess.call(command, shell = True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
-
 def token_request():
     maximo_response = maximo_session.post('https://192.168.91.179/visual-inspection/api/tokens',
                                          json = {'grant_type': "password", 
@@ -36,7 +31,6 @@ def token_request():
                                                  'password': "pcvision10!"},
                                          verify = False)
     return maximo_response.status_code, json.loads(maximo_response.text)
-
 def detect_insulators (filename):
     with open (filename, 'rb') as f: 
             # WARNING! verify = False is here to allow an untrusted cert! 
@@ -46,7 +40,6 @@ def detect_insulators (filename):
                                                            }, 
                                                   verify = False)
     return maximo_response.status_code, json.loads(maximo_response.text)
-
 def import_dataset(filename):
     with open(filename, 'rb') as f:
         maximo_response = maximo_session.post(dataset_import_url,
@@ -56,7 +49,6 @@ def import_dataset(filename):
                                                     'files' : (filename, f)
                                                     }
                                                 )
-
 def get_inference_output (inference_url, token):
     maximo_response = maximo_session.get(inference_url,
                                          headers = {'X-Auth-Token': token,'Content-type': 'application/json'},
@@ -85,7 +77,6 @@ def video_resizing (filename):
     out.release()
     cap.release()
     return out_filename
-
 def str_parser (srt_filename):
     f = open(srt_filename, 'r')
     gps_data = f.read()
@@ -109,7 +100,6 @@ def str_parser (srt_filename):
     gps_data_df = gps_data_df.join(gps_heights_df)
     gps_data_df = gps_data_df.join(gps_data_seconds_df)
     return gps_data_df
-
 def get_objects (video_inference_json):
     objects_list = video_inference_json['classified']
     objects_df_columns = list(objects_list[0].keys())
@@ -120,14 +110,11 @@ def get_objects (video_inference_json):
         objects_df = objects_df.append(pd.DataFrame.from_dict(obj), ignore_index = True)
         print(obj['sequence_number'])
     return objects_df
-
 def get_export (inference_url, token):
     maximo_response = maximo_session.get(inference_url+'/export',
                                          headers = {'X-Auth-Token': token,'Content-type': 'application/json'},
                                          verify = False)
     return maximo_response
-
-#TODO: koristit ffmpeg da videi ne bi imali 100+ MB nego 10ak MB
 def draw_json(foldername, results_folder, filename, detections, display = False, confidence_threshold = 0.9):
     detections_in_frames = {}
     for detection in detections['classified']:
