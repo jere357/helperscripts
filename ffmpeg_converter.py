@@ -2,8 +2,12 @@ import os
 import sys
 from tqdm import tqdm
 import subprocess
+
+"""
+creates a _converted folder in the folder passed as the argument and fills it with 1000xidk videos encoded with libx264 and same names
+"""
 def downscale_video(filename, folder_name):
-    video_folder_name = folder_name + '/' + folder_name + '_lowres'
+    video_folder_name = folder_name + '/' + folder_name + '_converted'
     try:
         os.mkdir(folder_name)
     except OSError as error:
@@ -14,9 +18,7 @@ def downscale_video(filename, folder_name):
     except OSError as error:
         #folder alrdy exists - WHO CARES 
         pass
-    command =  "ffmpeg -i " + folder_name + '/' + filename + " -filter:v scale=1000:-2 -c:v libx264 -crf 24 " + video_folder_name + '/' + filename[:-4] + '_lowres' + '.mp4'
-    #print(filename)
-    #print(command)
+    command =  "ffmpeg -i " + folder_name + '/' + filename + " -filter:v scale=1000:-2 -c:v libx264 -crf 24 " + video_folder_name + '/' + filename[:-4] + '.mp4'
     a = subprocess.call(command, shell = True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
 if __name__ == "__main__":
