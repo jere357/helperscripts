@@ -13,7 +13,8 @@ import subprocess
 """
 assumed folder structure:
 maximo_api.py
-videos/ folder containing videos
+videos/video1.mp4
+videos/video2.MP4
 
 """
 
