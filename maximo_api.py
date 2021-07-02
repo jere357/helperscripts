@@ -1,8 +1,3 @@
-"""
-Created on Wed May 19 10:06:43 2021
-@author: antun
-"""
-
 import requests
 import urllib3
 import json
@@ -13,14 +8,26 @@ import matplotlib.pyplot as plt
 import time
 import os
 from tqdm import tqdm
+import subprocess
 
 """
-from getpass import getpass
-from requests.auth import HTTPBasicAuth
-import certifi
-import urllib3
-import importlib
+assumed folder structure:
+maximo_api.py
+videos/ folder containing videos
+
 """
+
+
+def convert_video(filename, folder_name):
+    video_folder_name = folder_name + '/' + folder_name + '_converted'
+    try:
+        os.mkdir(video_folder_name)
+    except OSError as error:
+        #folder alrdy exists - WHO CARES 
+        pass
+    command =  "ffmpeg -i " + folder_name + '/' + filename + " -filter:v scale=1000:-2 -c:v libx264 -crf 17 " + video_folder_name + '/' + filename[:-4] + '.mp4'
+    a = subprocess.call(command, shell = True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
+
 def token_request():
     maximo_response = maximo_session.post('https://192.168.91.179/visual-inspection/api/tokens',
                                          json = {'grant_type': "password", 
@@ -122,11 +129,6 @@ def get_export (inference_url, token):
 #TODO: koristit ffmpeg da videi ne bi imali 100+ MB nego 10ak MB
 def draw_json(foldername, results_folder, filename, detections, display = False, confidence_threshold = 0.9):
     detections_in_frames = {}
-    try:
-        os.mkdir("results")
-    except:
-        pass
-    #list comprehension mozda
     for detection in detections['classified']:
         if detection['frame_number'] not in detections_in_frames.keys():
             detections_in_frames[detection['frame_number']] = []
@@ -134,7 +136,6 @@ def draw_json(foldername, results_folder, filename, detections, display = False,
     cap = cv2.VideoCapture(foldername + '/' + filename)
     ret, frame = cap.read()
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    #print("ime videa: {}".format(results_folder + '/' + str(filename[:-4]) + "_drawn.mp4"))
     writer = cv2.VideoWriter(results_folder + '/' + str(filename[:-4])+"_drawn.mp4", fourcc, int(cap.get(cv2.CAP_PROP_FPS)), (frame.shape[1],frame.shape[0]))
     frame_number = 0
     while True:
@@ -175,7 +176,7 @@ def cleanup(foldername, filename):
     if os.path.exists(filepath):
       os.remove(filepath)
     else:
-      print("KAJJAZNAM BURAZ") 
+      print("KAJJAZNAM BURAZ")
 def inference_and_save_results(foldername, results_folder, filename):
     maximo_response_code, inference_json = detect_insulators(str(foldername + '/' + filename))
     inference_url = 'https://192.168.91.179/visual-inspection/api/inferences/' + inference_json['_id']
@@ -192,15 +193,19 @@ def inference_and_save_results(foldername, results_folder, filename):
         pbar_previous = video_inference_json['percent_complete']
     pbar.write("gotov sam s inferencon")
     pbar.close()
-    with open(results_folder + '/' + filename + '.json', 'w') as f:
+    with open(results_folder + '/' + filename[:-4] + '.json', 'w') as f:
         json.dump(video_inference_json, f)
-    draw_json('videos', 'results', filename, video_inference_json, display = False)
+    draw_json(foldername, results_folder, filename, video_inference_json, display = False)
 if __name__ == "__main__":
     #SUPRESSA SAN SVE MOGUCE WARNINGE ZIPA!
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     requests.packages.urllib3.disable_warnings()
     foldername = 'videos'
     results_folder = 'results'
+    try:
+        os.mkdir(results_folder)
+    except:
+        pass
     maximo_session = requests.Session()
     maximo_response_code, token_json = token_request()
     print ("maximo token response code =% d"% maximo_response_code)
@@ -208,11 +213,12 @@ if __name__ == "__main__":
     token = token_json['token']
     insulators_url = "https://192.168.91.179/visual-inspection/api/dlapis/b574d02f-1fb8-49f7-9ecd-1f23718d0a08"
     video_list = [file for file in os.listdir(foldername) if file.lower().endswith('.mp4')]
-    #print(os.listdir('videos'))
-    #print(video_list)
     for video in video_list:
         print(foldername + '/' + video)
         inference_and_save_results(foldername, results_folder, video)
-        time.sleep(20)
-        cleanup(foldername, video)
-        #TODO: dodaj brisanje videa iz foldera videos posto mozhda kuzis kad se crasha
+        time.sleep(5)
+        #cleanup(foldername, video)
+    #print("infrecence done, converting to h264 now (:")
+    video_list = [file for file in os.listdir(results_folder) if file.lower().endswith('.mp4')]
+    for video in tqdm(video_list):
+        convert_video(video, results_folder)
