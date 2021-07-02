@@ -34,7 +34,7 @@ def detect_insulators (filename):
             # WARNING! verify = False is here to allow an untrusted cert! 
             maximo_response = maximo_session.post(insulators_url, 
                                                   files = {'files': (filename, f), 
-                                                           'genCaption': "true"
+                                                           'genCaption': "false"
                                                            }, 
                                                   verify = False)
     return maximo_response.status_code, json.loads(maximo_response.text)
@@ -120,7 +120,7 @@ def get_export (inference_url, token):
     return maximo_response
 
 #TODO: koristit ffmpeg da videi ne bi imali 100+ MB nego 10ak MB
-def draw_json(foldername, results_folder, filename, detections, display = False, confidence_threshold = 0.5):
+def draw_json(foldername, results_folder, filename, detections, display = False, confidence_threshold = 0.9):
     detections_in_frames = {}
     try:
         os.mkdir("results")
@@ -153,7 +153,8 @@ def draw_json(foldername, results_folder, filename, detections, display = False,
                     ymax = detection['ymax']
                     cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (255,0,0), 2)
                     cv2.putText(frame,str(round(detection['confidence'],2)), (xmin, ymin), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2, cv2.LINE_AA)
-                elif detection['label'] == "Broken insulator" and detection['confidence'] > confidence_threshold:
+                #TODO: razlicite confidence thresholde za razlicite klase (mozda dictionary ime_klase: thresh)
+                elif detection['label'] == "Broken insulator" and detection['confidence'] > 0.3:
                     xmin = detection['xmin']
                     xmax = detection['xmax']
                     ymin = detection['ymin']
@@ -205,7 +206,7 @@ if __name__ == "__main__":
     print ("maximo token response code =% d"% maximo_response_code)
     #print ("jsonresp:% s"% token_json)
     token = token_json['token']
-    insulators_url = "https://192.168.91.179/visual-inspection/api/dlapis/93f9b236-934b-40f1-86c2-b63c5e249342"
+    insulators_url = "https://192.168.91.179/visual-inspection/api/dlapis/b574d02f-1fb8-49f7-9ecd-1f23718d0a08"
     video_list = [file for file in os.listdir(foldername) if file.lower().endswith('.mp4')]
     #print(os.listdir('videos'))
     #print(video_list)
