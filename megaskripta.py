@@ -237,7 +237,7 @@ def downscale_video(filename, folder_name = 'downscaled_videos', target_resoluti
         os.mkdir(video_folder_name)
     except OSError as error:
         pass
-    new_video_name = video_folder_name + '/' + filename[:-4] + '_lowres17.mp4'
+    new_video_name = video_folder_name + '/' + filename[:-4] + '_lowres.mp4'
     #ffmpeg -i DJI_0963.MP4 -c:v libx264 -crf 24 clipped_videos/videotest.mp4 <- how it should look in the terminal
     command = f'ffmpeg -i {filename} -filter:v scale={target_resolution}:-2 -c:v libx264 -crf 10 {new_video_name}'
     print(command)
