@@ -1,0 +1,31 @@
+<annotation>
+    <size>
+        <width>4096</width>
+        <height>2160</height>
+        <depth>3</depth>
+    </size>
+    <object>
+        <_id></_id>
+        <name>Insulator</name>
+        <bndbox>
+            <xmin>779</xmin>
+            <ymin>1176</ymin>
+            <xmax>1027</xmax>
+            <ymax>1778</ymax>
+        </bndbox>
+        <generate_type>manual</generate_type>
+        <file_id></file_id>
+    </object>
+    <object>
+        <_id></_id>
+        <name>Insulator</name>
+        <bndbox>
+            <xmin>2883</xmin>
+            <ymin>80</ymin>
+            <xmax>3197</xmax>
+            <ymax>816</ymax>
+        </bndbox>
+        <generate_type>manual</generate_type>
+        <file_id></file_id>
+    </object>
+</annotation>
