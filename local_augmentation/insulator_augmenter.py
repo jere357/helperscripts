@@ -1,24 +1,26 @@
 from hmac import new
 import albumentations as A
 from albumentations.augmentations.geometric.rotate import Rotate
-from albumentations.augmentations.transforms import Equalize, GaussianBlur, VerticalFlip
+from albumentations.augmentations.transforms import Equalize, VerticalFlip
 from albumentations.core.composition import OneOf
 import cv2
 import glob
+#from albumentations.pytorch.transforms import ToTensorV2
 import xml.etree.ElementTree as ET
 import secrets
 from tqdm import tqdm
-import pathlib
 #TODO: copypaste augmentaciju implementirat xd
 """
 load only images that HAVE bbox files
 """
 
+
+
 def draw_bboxes(image, bbox_list):
     for bbox in bbox_list:
         cv2.rectangle(image, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color = (255,0,0), thickness = 3)
 
-def load_images(foldername):
+def load_images(foldername, image_format = '.jpg'):
     image_filenames = []
     bbox_filenames = glob.glob(str(foldername) + "/*.xml")
     #bbox_list is a list. each element of that list contains a list which has all the bounding boxes found on one photo (xmin, ymin, xmax, ymax)
@@ -26,7 +28,7 @@ def load_images(foldername):
     image_list = []
     size_list = []
     #put all image filenames in a list, insuring proper order of filenames
-    [image_filenames.append(name[:-4] + '.png') for name in bbox_filenames]
+    [image_filenames.append(name[:-4] + image_format) for name in bbox_filenames]
     for bbox, image in zip(bbox_filenames, image_filenames):
         tree = ET.parse(bbox)
         image_list.append(cv2.imread(image))
@@ -81,11 +83,12 @@ def write_augmented_image_to_disk(image, bboxes, size, foldername):
     #STVORI XML FAJLU
     write_xml_file(bboxes, size, foldername, new_name)
     cv2.imwrite(str(foldername + '/' + new_name + '.png'), image)
-def augment_dataset_object_detecion(foldername, num_epochs=5):
+def augment_dataset(foldername, num_epochs=5):
     transform = A.Compose([
         A.OneOf([
-            A.SafeRotate(p=0.2),
-            A.VerticalFlip(p=0.25),
+            A.ShiftScaleRotate(p=0.2),
+            A.Rotate(p=0.6),
+            A.VerticalFlip(p=0.2),
             A.HorizontalFlip(p=0.4),
         ], p=0.8),
         A.OneOf([
@@ -95,23 +98,21 @@ def augment_dataset_object_detecion(foldername, num_epochs=5):
         ], p=0.6),
         A.RGBShift(r_shift_limit=30, g_shift_limit=30, b_shift_limit=30, p=0.25),
         A.OneOf([
-            A.GaussianBlur(p=0.2),
             A.MotionBlur(p=.2),
             A.MedianBlur(blur_limit=3, p=0.15),
             A.Blur(blur_limit=3, p=0.15),
-        ], p=0.7),
-        A.Affine(p=0.1),
-        A.Cutout(num_holes=1, max_h_size=400, max_w_size=250, p=0.3)
+        ], p=0.6),
+        A.Affine(p=0.05),
     ], bbox_params=A.BboxParams(format='pascal_voc'))
     image_list, bbox_list, size_list = load_images(foldername)
-    for epoch in tqdm(range(num_epochs)):
+    for _ in tqdm(range(num_epochs)):
         for image, bboxes, size in zip(image_list, bbox_list, size_list):
             #append a class label for every bbox bcs thats how albumentations works
             [element.append("Insulator") for element in bboxes]
             transformed = transform(image = image, bboxes = bboxes)
             draw_bboxes(transformed['image'], transformed['bboxes'])
-            #write_augmented_image_to_disk(transformed['image'], transformed['bboxes'], size, foldername)
-            cv2.imshow("title", cv2.resize(transformed['image'], (1000, 600)))
-            cv2.waitKey()
+            write_augmented_image_to_disk(transformed['image'], transformed['bboxes'], size, foldername)
+            #cv2.imshow("title", cv2.resize(transformed['image'], (1000, 600)))
+            #cv2.waitKey()
 if __name__ == "__main__":
-    augment_dataset_object_detecion(foldername = 'dataset')
+    augment_dataset(foldername = 'dataset')
