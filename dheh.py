@@ -76,16 +76,16 @@ class Vocab:
     def encode_text(self, text):
         ints = []
         [ints.append(self.stoi_text.get(token, self.stoi_text["<UNK>"])) for token in text]
-        return torch.tensor(ints, device="cuda", dtype=torch.long)
+        return torch.tensor(ints, device=device, dtype=torch.long)
 
     def encode_sentiment(self, sentiment):
-        return torch.tensor(self.stoi_sentiment[sentiment], device="cuda")
+        return torch.tensor(self.stoi_sentiment[sentiment], device=device)
 
 
 def generate_embedding_matrix(vocabulary: Vocab, pretrained_file: str, random_matrix=False):
     if random_matrix:
-        embeddings_tensor = torch.rand((len(vocabulary.vocabulary) + 2, 300), dtype=torch.float32, device="cuda")
-        embeddings_tensor[0] = torch.zeros((1, 300), dtype=torch.float32, device="cuda")
+        embeddings_tensor = torch.rand((len(vocabulary.vocabulary) + 2, 300), dtype=torch.float32, device=device)
+        embeddings_tensor[0] = torch.zeros((1, 300), dtype=torch.float32, device=device)
         return torch.nn.Embedding.from_pretrained(embeddings_tensor, freeze=False, padding_idx=0)
     embedding_dictionary = {}
     with open(pretrained_file, "r") as file:
@@ -93,16 +93,16 @@ def generate_embedding_matrix(vocabulary: Vocab, pretrained_file: str, random_ma
     for line in word_embeddings:
         split_line = line.split(" ")
         embeddings_float_vector = [float(x.strip()) for x in split_line[1:]]
-        # embedding_dictionary[vocabulary.stoi_text[split_line[0]]] = torch.tensor(embeddings_float_vector, device="cuda", dtype=torch.float32)
+        # embedding_dictionary[vocabulary.stoi_text[split_line[0]]] = torch.tensor(embeddings_float_vector, device=device, dtype=torch.float32)
         embedding_dictionary[vocabulary.stoi_text[split_line[0]]] = embeddings_float_vector
     sorted_dict = {}
     sorted_keys = sorted(list(embedding_dictionary))
     for w in sorted_keys:
-        sorted_dict[w] = torch.tensor(embedding_dictionary[w], device="cuda", dtype=torch.float32)
+        sorted_dict[w] = torch.tensor(embedding_dictionary[w], device=device, dtype=torch.float32)
     embedding_dictionary = sorted_dict
     # INIT tensor reprezentacija i napuni ga vrijednostima
-    embeddings_tensor = torch.rand((len(vocabulary.vocabulary) + 2, 300), dtype=torch.float32, device="cuda")
-    embeddings_tensor[0] = torch.zeros((1, 300), dtype=torch.float32, device="cuda")
+    embeddings_tensor = torch.rand((len(vocabulary.vocabulary) + 2, 300), dtype=torch.float32, device=device)
+    embeddings_tensor[0] = torch.zeros((1, 300), dtype=torch.float32, device=device)
     for idx, embedding_vector in embedding_dictionary.items():
         embeddings_tensor[idx] = embedding_vector
 
@@ -117,14 +117,14 @@ def pad_collate_fn(batch):
       A tensor representing the input batch.
     """
     texts, labels = zip(*batch) # Assuming the instance is in tuple-like form
-    lengths = torch.tensor([len(text) for text in texts], device="cuda") # Needed for later
-    texts_tensor = torch.zeros((len(lengths), int(max(lengths))), dtype=torch.float32, device="cuda")
+    lengths = torch.tensor([len(text) for text in texts], device=device) # Needed for later
+    texts_tensor = torch.zeros((len(lengths), int(max(lengths))), dtype=torch.float32, device=device)
     for i, text in enumerate(texts):
         max_length = max(lengths)
-        texts_tensor[i] = torch.cat( (text, torch.zeros(max_length - text.size()[0], device="cuda")))
+        texts_tensor[i] = torch.cat( (text, torch.zeros(max_length - text.size()[0], device=device)))
 
     #texts = torch.tensor([text for text in texts])
-    labels = torch.tensor([label for label in labels], device="cuda")
+    labels = torch.tensor([label for label in labels], device=device)
     # Process the text instances
     return texts_tensor, labels, lengths
 
@@ -152,11 +152,11 @@ if __name__ == '__main__':
             word_embedding = embedding_matrix(word.to(torch.long))
             word_tensors.append(word_embedding)
         review_tensor = torch.stack(word_tensors, dim= 0)
-        layer = nn.AvgPool2d((34, 1), stride=1)
-        asdf= layer(review_tensor)
         batch_tensors.append(review_tensor)
         pass
     batch_tensor = torch.stack(batch_tensors, dim=0)
+    layer = nn.AdaptiveAvgPool2d((1, 300))
+    batches_averaged = layer(batch_tensor)
     instance_text, instance_label = train_dataset.instances[3]
     print(f"Text: {instance_text}")
     print(f"Label: {instance_label}")
