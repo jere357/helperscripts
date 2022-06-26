@@ -6,7 +6,7 @@ from math import floor
 import torch
 from torch import nn
 from torch.nn.functional import conv2d as conv2d
-#white = torch.ones black = torch.zeros
+
 def pad_stripes(stripes, padding_color = 'white'):
     padded_stripes = []
     matrix_dimensions = stripes[0].shape
@@ -72,10 +72,13 @@ def autocorrelate_padded(input, weights):
     return result_array
 
 if __name__ == '__main__':
-    image_tensor = load_image('images/polica.jpg')
-    stripes = extract_stripes(image_tensor, num_stripes = 9, stripe_width=5)
-    padded_stripes = pad_stripes(stripes)
+    image_tensor = load_image('images/fejk_polica_ali_5.jpg')
+    #TODO: n-1 stripeova iz nekog razloga idk pogl posli
+    stripes = extract_stripes(image_tensor, num_stripes = 3, stripe_width=140)
+    padded_stripes = pad_stripes(stripes, padding_color='black')
     for stripe, stripe_padded in zip(stripes, padded_stripes):
+        display_stripe(stripe)
+        display_stripe(stripe_padded)
         result = autocorrelate_padded(stripe_padded, stripe.unsqueeze(0))
         pass
     #display_stripe(padded_stripes[0])
