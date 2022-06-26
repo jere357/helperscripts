@@ -6,7 +6,7 @@ from math import floor
 import torch
 from torch import nn
 from torch.nn.functional import conv2d as conv2d
-
+#white = torch.ones black = torch.zeros
 def pad_stripes(stripes, padding_color = 'white'):
     padded_stripes = []
     matrix_dimensions = stripes[0].shape
