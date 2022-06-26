@@ -4,12 +4,14 @@ from torchvision.transforms.functional import rgb_to_grayscale
 import matplotlib.pyplot as plt
 from math import floor
 import torch
+from torch import nn
+from torch.nn.functional import conv2d as conv2d
 
-def pad_stripes(stripes, padding_color = 'black'):
+def pad_stripes(stripes, padding_color = 'white'):
     padded_stripes = []
     matrix_dimensions = stripes[0].shape
     for stripe in stripes:
-        print(stripe.shape)
+        #print(stripe.shape)
         if(padding_color == 'black'):
             padding_top = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
             padding_bot = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
@@ -46,12 +48,48 @@ def extract_stripes(image, num_stripes, stripe_width=10):
     return stripes
 
 
+def load_image(path):
+    image = Image.open(path)
+    img_tensor = TF.to_tensor(image)
+    img_tensor.unsqueeze(0)
+    return img_tensor
+
+
+def autocorrelate(input, weights):
+    result = conv2d(input, weight=weights)
+    return result
+
+
+def autocorrelate_padded(input, weights):
+    result_array = []
+    print(input.shape)
+    print(weights.shape)
+    for i in range(weights.shape[2]):
+        sub_stripe = input[:,i:i+weights.shape[2],:]
+        result_array.append(autocorrelate(sub_stripe, weights))
+    plt.plot(result_array)
+    plt.show()
+    return result_array
 
 if __name__ == '__main__':
-    image = Image.open('images/antonio1.png')
-    x = TF.to_tensor(image)
-    x.unsqueeze(0)
-    stripes = extract_stripes(x, 9, )
+    image_tensor = load_image('images/polica.jpg')
+    stripes = extract_stripes(image_tensor, num_stripes = 9, stripe_width=5)
     padded_stripes = pad_stripes(stripes)
-    display_stripe(stripes[0])
-    display_stripe(padded_stripes[0])
+    for stripe, stripe_padded in zip(stripes, padded_stripes):
+        result = autocorrelate_padded(stripe_padded, stripe.unsqueeze(0))
+        pass
+    #display_stripe(padded_stripes[0])
+    #print(padded_stripes[0].shape)
+    #print(image_tensor.shape[1:])
+    #display_stripe(stripes[2])
+    """
+    a = conv_layer.weight.detach().numpy()[0][0]
+    b =  conv_layer.weight.detach().numpy()[0][1]
+    c = conv_layer.weight.detach().numpy()[0][2]
+    plt.plot(a)
+    plt.show()
+    plt.plot(b)
+    plt.show()
+    plt.plot(c)
+    plt.show()
+    """
