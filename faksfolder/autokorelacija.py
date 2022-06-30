@@ -8,6 +8,7 @@ import torch
 from torch import nn
 import numpy as np
 from torch.nn.functional import conv2d as conv2d
+from numpy import diff
 
 def pad_stripes(stripes, padding_color = 'white'):
     padded_stripes = []
@@ -15,11 +16,11 @@ def pad_stripes(stripes, padding_color = 'white'):
     for stripe in stripes:
         #print(stripe.shape)
         if(padding_color == 'black'):
-            padding_top = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
-            padding_bot = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
+            padding_top = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]), floor(matrix_dimensions[2])))
+            padding_bot = torch.zeros((int(matrix_dimensions[0]), floor(matrix_dimensions[1]), floor(matrix_dimensions[2])))
         elif(padding_color == 'white'):
-            padding_top = torch.ones((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
-            padding_bot = torch.ones((int(matrix_dimensions[0]), floor(matrix_dimensions[1]/2), floor(matrix_dimensions[2])))
+            padding_top = torch.ones((int(matrix_dimensions[0]), floor(matrix_dimensions[1]), floor(matrix_dimensions[2])))
+            padding_bot = torch.ones((int(matrix_dimensions[0]), floor(matrix_dimensions[1]), floor(matrix_dimensions[2])))
         padded_stripes.append(torch.cat((padding_top, stripe, padding_bot), dim=1))
         #print(padded_stripe.shape)
     return padded_stripes
@@ -66,7 +67,7 @@ def autocorrelate_padded(input, weights):
     result_array = []
     #print(input.shape)
     #print(weights.shape)
-    for i in range(weights.shape[2]):
+    for i in range(weights.shape[2]*2):
         sub_stripe = input[:,i:i+weights.shape[2],:]
         result_array.append(autocorrelate(sub_stripe, weights))
     #plt.plot(result_array)
@@ -80,7 +81,7 @@ if __name__ == '__main__':
     #sns.set()
     image_tensor = load_image('images/fejk_polica_ali_5.jpg')
     #TODO: n-1 stripeova iz nekog razloga idk pogl posli
-    stripes = extract_stripes(image_tensor, num_stripes = 6, stripe_width=30)
+    stripes = extract_stripes(image_tensor, num_stripes = 4, stripe_width=30)
     padded_stripes = pad_stripes(stripes, padding_color='black')
     image_results = []
     for stripe, stripe_padded in zip(stripes, padded_stripes):
@@ -88,7 +89,12 @@ if __name__ == '__main__':
         display_stripe(stripe_padded)
         result = autocorrelate_padded(stripe_padded, stripe.unsqueeze(0))
         image_results.append(result)
-        fig ,(ax1,ax2) = plt.subplots(1, 2)
+        x = list(range(len(result)))
+        dydx = diff(result)/diff(x)
+        fig ,(ax1,ax2, ax3) = plt.subplots(1, 3)
+        x = list(range(len(result)))[1:]
+        auu = np.argwhere([round(number) for number in dydx] == 0)
+        ax3.hist([round(number) for number in dydx])
         fig.suptitle('stripe i rezultat autokorelacije')
         ax1.imshow(stripe.permute(1,2,0))
         ax1.spines['top'].set_visible(False)
@@ -100,11 +106,14 @@ if __name__ == '__main__':
         ax2.plot(result, range(len(result)))
         ax2.set_yticklabels([])
         fig.show()
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+    #x = list(range(len(image_results)))
+    dydx = diff(image_results)/diff(x)
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
     fig.suptitle('polica i graf korelacije po stripeovima')
     ax1.imshow(image_tensor.permute(1,2,0), aspect='auto')
     ax1.set_yticklabels([])
     ax1.set_xticklabels([])
+    ax3.plot(x,dydx)
     for i, stripe_result in enumerate(image_results):
         ax2.plot(np.array(stripe_result) + 5000*i, range(len(result)))
         ax2.set_yticklabels([])
