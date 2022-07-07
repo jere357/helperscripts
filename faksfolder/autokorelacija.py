@@ -9,6 +9,7 @@ from torch import nn
 import numpy as np
 from torch.nn.functional import conv2d as conv2d
 from numpy import diff
+import matplotlib.patches as patches
 
 def pad_stripes(stripes, padding_color = 'white'):
     padded_stripes = []
@@ -62,6 +63,20 @@ def autocorrelate(input, weights):
     result = conv2d(input, weight=weights)
     return result.item()
 
+def derivative_decisions(result):
+    x = list(range(len(result)))
+    dydx = diff(result) / diff(x)
+    dydx = list(dydx)
+    #dydx.remove(max(dydx))
+    #dydx.remove(min(dydx))
+    # TODO: UZMI DIO DYDX DI JE DERIVACIJA MANJA OD X I ONDA CRTAJ PO ORIGINALNOJ SLICI - TO SU PLATOI FUNKCIJE
+    # TODO: UZMI DIO DYDX DI SU DERIVACIJE BIG I TO NACRTAJ PO SLICI TO BI TREBALA BIT PODRUCJA VISOKOG RASTA AUTOKORELACIJE
+    dydx_rounded = [round(abs(number)) for number in dydx]
+    plateaus = np.argwhere(np.array(dydx_rounded) > 50)
+    fig2, ax = plt.subplots()
+    fig2 = plt.hist(dydx_rounded, range=(0, 500))
+    return dydx_rounded, plateaus
+
 
 def autocorrelate_padded(input, weights):
     result_array = []
@@ -79,22 +94,20 @@ def get_range(a, b, offset):
 """
 if __name__ == '__main__':
     #sns.set()
-    image_tensor = load_image('images/fejk_polica_ali_5.jpg')
+    image_tensor = load_image('images/fake_polica.jpg')
     #TODO: n-1 stripeova iz nekog razloga idk pogl posli
-    stripes = extract_stripes(image_tensor, num_stripes = 4, stripe_width=30)
+    stripes = extract_stripes(image_tensor, num_stripes = 2, stripe_width=30)
     padded_stripes = pad_stripes(stripes, padding_color='black')
     image_results = []
     for stripe, stripe_padded in zip(stripes, padded_stripes):
-        display_stripe(stripe)
-        display_stripe(stripe_padded)
+        #display_stripe(stripe)
+        #display_stripe(stripe_padded)
         result = autocorrelate_padded(stripe_padded, stripe.unsqueeze(0))
         image_results.append(result)
-        x = list(range(len(result)))
-        dydx = diff(result)/diff(x)
-        fig ,(ax1,ax2, ax3) = plt.subplots(1, 3)
+        autocorrelation_derivated, plateaus = derivative_decisions(result[:int(round(len(result)/2))])
+        plt.show()
+        fig ,(ax1,ax2) = plt.subplots(1, 2)
         x = list(range(len(result)))[1:]
-        auu = np.argwhere([round(number) for number in dydx] == 0)
-        ax3.hist([round(number) for number in dydx])
         fig.suptitle('stripe i rezultat autokorelacije')
         ax1.imshow(stripe.permute(1,2,0))
         ax1.spines['top'].set_visible(False)
@@ -103,17 +116,24 @@ if __name__ == '__main__':
         ax1.spines['left'].set_visible(False)
         ax1.set_yticklabels([])
         ax1.set_xticklabels([])
-        ax2.plot(result, range(len(result)))
-        ax2.set_yticklabels([])
+        pola_result = int(round(len(result)/2))
+        ax2.plot(range(pola_result), result[:pola_result])
+        for plateau in plateaus:
+            rect = patches.Rectangle((plateau, result[int(plateau)]), 30, 300, linewidth=1, edgecolor='r', facecolor='none')
+            ax2.add_patch(rect)
+            rect1 = patches.Rectangle((20, plateau), 9, 9, linewidth=1, edgecolor='r',
+                                     facecolor='none')
+            ax1.add_patch(rect1)
+        #ax2.set_yticklabels([])
+        #ax3.plot(result[pola_result:], range(pola_result))
+        #ax3.set_yticklabels([])
         fig.show()
     #x = list(range(len(image_results)))
-    dydx = diff(image_results)/diff(x)
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    fig, (ax1, ax2) = plt.subplots(1, 2)
     fig.suptitle('polica i graf korelacije po stripeovima')
     ax1.imshow(image_tensor.permute(1,2,0), aspect='auto')
     ax1.set_yticklabels([])
     ax1.set_xticklabels([])
-    ax3.plot(x,dydx)
     for i, stripe_result in enumerate(image_results):
         ax2.plot(np.array(stripe_result) + 5000*i, range(len(result)))
         ax2.set_yticklabels([])
