@@ -87,7 +87,17 @@ def write_xml_annotations(polygons, ID, width, height, labels_foldername = "labe
     #Path(str(path)).touch()
     anno_tree.write(path)
 
-
+def draw_first_three_rectangles(img, polygon):
+    cv2.rectangle(img, (int(polygon[0][0] * width), int(polygon[0][1] * height)),
+                  (int(polygon[0][0] * width) + 20, int(polygon[0][1] * height) + 20),
+                  (255, 255, 255), 5)
+    cv2.rectangle(img, (int(polygon[1][0] * width), int(polygon[1][1] * height)),
+                  (int(polygon[1][0] * width) + 20, int(polygon[1][1] * height) + 20),
+                  (255, 0, 255), 5)
+    cv2.rectangle(img, (int(polygon[2][0] * width), int(polygon[2][1] * height)),
+                  (int(polygon[2][0] * width) + 20, int(polygon[2][1] * height) + 20),
+                  (0, 255, 255), 5)
+    pass
 counter = 0
 train_file = pd.read_csv('retail50k_train_1.csv')
 #train_file2 = pd.read_csv('retail50k_train_2.csv')
@@ -132,18 +142,16 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
         b = distance_between_two_points(polygon[1], polygon[2], height, width)
         cx = int(width * (polygon[0][0] + polygon[1][0] + polygon[2][0] + polygon[3][0]) / 4)
         cy = int(height * (polygon[1][1] + polygon[3][1] + polygon[2][1] + polygon[0][1]) / 4)
-
+        #(cx,cy) krug nacrtaj idk jebe me se
+        if display:
+            cv2.circle(img,
+                   (cx, cy),
+                   5,
+                   (255, 0, 255),
+                   thickness=7)
         if b > a:
+            draw_first_three_rectangles(img, polygon)
             if display is True:
-                cv2.rectangle(img, (int(polygon[0][0] * width), int(polygon[0][1] * height)),
-                              (int(polygon[0][0] * width) + 20, int(polygon[0][1] * height) + 20),
-                              (255, 255, 255), 5)
-                cv2.rectangle(img, (int(polygon[1][0] * width), int(polygon[1][1] * height)),
-                              (int(polygon[1][0] * width) + 20, int(polygon[1][1] * height) + 20),
-                              (255, 0, 255), 5)
-                cv2.rectangle(img, (int(polygon[2][0] * width), int(polygon[2][1] * height)),
-                              (int(polygon[2][0] * width) + 20, int(polygon[2][1] * height) + 20),
-                              (0, 255, 255), 5)
                 cv2.imshow("nezeljeni redosljed", img)
                 cv2.waitKey(0)
             print("nezeljeni redosljed go next")
@@ -157,11 +165,6 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
                        (255, 255, 255),
                        thickness=3
                        )
-            cv2.circle(img,
-                       (cx,cy),
-                       5,
-                       (255,0,255),
-                      thickness=7)
             nasuprotna = distance_between_two_points(polygon[1], zero_crtano, height, width)
             #kateta = distance_between_two_points(polygon[1], polygon[0], height, width)
             kateta = distance_between_two_points(zero_crtano, polygon[0], height, width)
@@ -172,6 +175,16 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
             angle = asin(distance_between_two_points(polygon[1], zero_crtano, height, width) /
                       distance_between_two_points(polygon[0], polygon[1], height, width))
         elif a > b:
+            draw_first_three_rectangles(img, polygon)
+            ch = max(a,b)
+            cw = min(a,b)
+            zero_crtano = (polygon[0][0] + cw/width, polygon[0][1]) #THIS variable is also in the fucked up format that is [0,1]*dimension instead of just a point on the image
+            cv2.circle(img,
+                       (int(width * zero_crtano[0]), int(height * zero_crtano[1])),
+                       5,
+                       (255, 255, 255),
+                       thickness=3
+                       )
             counter+=1
             pass
         #cv2.imshow("slika", img)
