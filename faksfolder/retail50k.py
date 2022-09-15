@@ -185,6 +185,14 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
                        (255, 255, 255),
                        thickness=3
                        )
+            nasuprotna = distance_between_two_points(polygon[3], zero_crtano, height, width)
+            #kateta = distance_between_two_points(polygon[1], polygon[0], height, width)
+            kateta = distance_between_two_points(zero_crtano, polygon[0], height, width)
+            if nasuprotna > kateta:
+                print("sjebana slika idc uopce zasto bmk go next")
+                continue
+            angle = asin(distance_between_two_points(polygon[1], zero_crtano, height, width) /
+                      distance_between_two_points(polygon[0], polygon[1], height, width))
             counter+=1
             pass
         #cv2.imshow("slika", img)
