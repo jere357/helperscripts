@@ -9,6 +9,7 @@ from collections import defaultdict
 from math import sqrt, asin
 from tqdm import tqdm
 from xml.etree import ElementTree as ET
+from sklearn.model_selection import train_test_split
 
 def distance_between_two_points(p1, p2, h , w):
     return sqrt((w*p1[0] - w*p2[0]) ** 2 + (h*p1[1] - h*p2[1]) ** 2)
@@ -31,12 +32,16 @@ def extract_images_with_4point_polygons(images):
 
 def generate_trainval_files(folder = 'images'):
     for root, dirs, files in os.walk("images"):
-        print(files)
+        #print(files)
         print(len(files))
+        """
         train = files[0:6000]
         val = files[6000:6500]
         trainval = files[0:6500]
         test = files[6500:7074]
+        """
+        trainval, test = train_test_split(files, test_size = 0.1)
+        train, val = train_test_split(trainval, test_size = 0.15)
         with open(os.path.join("ImageSets", "train.txt"), 'w') as f:
             for line in train:
                 f.write(f"{line[:-4]}\n")
@@ -86,17 +91,38 @@ def write_xml_annotations(polygons, ID, width, height, labels_foldername = "labe
     path = os.path.join(os.getcwd(), labels_foldername, f"{ID}.xml")
     #Path(str(path)).touch()
     anno_tree.write(path)
+"""
+p1 is the left upper point of the polygon 
+p2 is the upper right point of the polygon
+exactly how to determine the upper left and right points in the polygon is left as an exercise to the reader:))
+remember that coordinate systems in images start from the top left 
+"""
+def determine_sign_of_angle(p1, p2):
+    if p1[1] > p2[1]:
+        return -1
+    elif p2[1] >= p1[1]:
+        return 1
+
+def sort_polygon_points(points, h, w):
+    point_distances = {}
+    for point in points:
+        point_distances[tuple(point)] = distance_between_two_points((0,0), point, h, w)
+    points_sorted = sorted(point_distances.items(), key=lambda item: item[1])
+    a = [point[0] for point in points_sorted]
+    return [point[0] for point in points_sorted]
+
+
 
 def draw_first_three_rectangles(img, polygon):
     cv2.rectangle(img, (int(polygon[0][0] * width), int(polygon[0][1] * height)),
-                  (int(polygon[0][0] * width) + 20, int(polygon[0][1] * height) + 20),
-                  (255, 255, 255), 5)
+                  (int(polygon[0][0] * width) + 15, int(polygon[0][1] * height) + 15),
+                  (255, 255, 255), 4)
     cv2.rectangle(img, (int(polygon[1][0] * width), int(polygon[1][1] * height)),
-                  (int(polygon[1][0] * width) + 20, int(polygon[1][1] * height) + 20),
-                  (255, 0, 255), 5)
+                  (int(polygon[1][0] * width) + 15, int(polygon[1][1] * height) + 15),
+                  (255, 0, 255), 4)
     cv2.rectangle(img, (int(polygon[2][0] * width), int(polygon[2][1] * height)),
-                  (int(polygon[2][0] * width) + 20, int(polygon[2][1] * height) + 20),
-                  (0, 255, 255), 5)
+                  (int(polygon[2][0] * width) + 15, int(polygon[2][1] * height) + 15),
+                  (0, 255, 255), 4)
     pass
 counter = 0
 train_file = pd.read_csv('retail50k_train_1.csv')
@@ -104,7 +130,7 @@ train_file = pd.read_csv('retail50k_train_1.csv')
 #train_file = pd.concat([train_file1, train_file2])
 # DICTIONARY LIKE link : (poligon, productID)
 images_foldername = "images"
-display = True
+display = False
 images = defaultdict(lambda: [])
 product_id_dict = defaultdict(lambda: [])
 for idx, row in train_file.iterrows():
@@ -118,12 +144,11 @@ for idx, row in train_file.iterrows():
 four_point_polygon_images = extract_images_with_4point_polygons(images)
 print(f"broj slika u images je {len(images.keys())}")
 print(f"broj slika u four points polygons je : {len(four_point_polygon_images.keys())}")
-#exit()
-#CRTANJE POLIGONA KOD
-a_counter = 0
-b_counter = 0
 #28 je problematican index remember
 for image_name in tqdm(list(four_point_polygon_images.keys())):
+    #531 je "zanimljiva za prezu amo rec"
+    images_list = list(four_point_polygon_images.keys())
+    images_set = set(four_point_polygon_images.keys())
     xml_annotations = []
     img = cv2.imread(f'train1/{image_name}')
     if img is None:
@@ -131,15 +156,25 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
         print(f"slika {image_name} not found on disk idk what yall doin")
         continue
     height, width, c = img.shape
+
     #print(f'slika:{image_name} dimenzija {width},{height}')
+    #something_weird refers to width being smaller than height so we just skip those images ll together since theyre a really really small part of the dataest cba
+    something_weird_happened = False  
     for object in images[image_name]:
         polygon = object[0]
+        polygon_unsorted = object[0]
+        #points gotta be sorted bcs sometimes the choice of the first point in the polygon is not consistent by the annotators
+        polygon = sort_polygon_points(polygon, height, width)
         object_id = object[1]
         #imaju neke doadatne nebitne klase koje nisu police idk
         color = (255,0,0)
         #A i B decision making dio
-        a = distance_between_two_points(polygon[0], polygon[1], height, width)
-        b = distance_between_two_points(polygon[1], polygon[2], height, width)
+        a = distance_between_two_points(polygon[0], polygon[2], height, width)
+        b = distance_between_two_points(polygon[2], polygon[3], height, width)
+        if a < b:
+            counter+=1
+            something_weird_happened = True
+            print("nesto cudno hm")
         cx = int(width * (polygon[0][0] + polygon[1][0] + polygon[2][0] + polygon[3][0]) / 4)
         cy = int(height * (polygon[1][1] + polygon[3][1] + polygon[2][1] + polygon[0][1]) / 4)
         #(cx,cy) krug nacrtaj idk jebe me se
@@ -149,56 +184,72 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
                    5,
                    (255, 0, 255),
                    thickness=7)
+        draw_first_three_rectangles(img, polygon)
+        cw = max(a, b)
+        ch = min(a, b)
+        zero_crtano = (polygon[0][0] + cw / width, polygon[0][1])  # THIS variable is also in the fucked up format that is [0,1]*dimension instead of just a point on the image
+        nasuprotna = distance_between_two_points(polygon[2], zero_crtano, height, width)
+        kateta = distance_between_two_points(polygon[0], polygon[2], height, width)
+        if nasuprotna > kateta:
+            something_weird_happened = True
+            counter += 1
+            print("sjebana slika idc uopce zasto bmk go next")
+            continue
+        if display:
+            cv2.imshow(image_name, img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+        angle = asin(distance_between_two_points(polygon[2], zero_crtano, height, width) /
+                     distance_between_two_points(polygon[0], polygon[2], height, width))
+        angle_sign = determine_sign_of_angle(polygon[0], polygon[2])
+        angle *= angle_sign
+        """
         if b > a:
             draw_first_three_rectangles(img, polygon)
-            if display is True:
-                cv2.imshow("nezeljeni redosljed", img)
-                cv2.waitKey(0)
-            print("nezeljeni redosljed go next")
             cw = max(a,b)
             ch = min(a,b)
-            #TODO:sta ako 0 nije gori livo na slici :)))))))))
+            #TODO:sta ako 0 nije gori livo na slici :))))))))) - onda eta gege idk brate
             zero_crtano = (polygon[0][0] + cw/width, polygon[0][1]) #THIS variable is also in the fucked up format that is [0,1]*dimension instead of just a point on the image
-            cv2.circle(img,
-                       (int(width * zero_crtano[0]), int(height * zero_crtano[1])),
-                       5,
-                       (255, 255, 255),
-                       thickness=3
-                       )
-            nasuprotna = distance_between_two_points(polygon[1], zero_crtano, height, width)
-            #kateta = distance_between_two_points(polygon[1], polygon[0], height, width)
-            kateta = distance_between_two_points(zero_crtano, polygon[0], height, width)
+            nasuprotna = distance_between_two_points(polygon[3], zero_crtano, height, width)
+            kateta = distance_between_two_points(polygon[0], polygon[3], height, width)
             if nasuprotna > kateta:
                 print("sjebana slika idc uopce zasto bmk go next")
                 continue
-            #TODO: odredi jeli + ili - za angle ovisno o jel put gori ili put doli
-            angle = asin(distance_between_two_points(polygon[1], zero_crtano, height, width) /
-                      distance_between_two_points(polygon[0], polygon[1], height, width))
+
+            cv2.imshow(image_name, img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            angle = asin(distance_between_two_points(polygon[3], zero_crtano, height, width) /
+                      distance_between_two_points(polygon[0], polygon[3], height, width))
+            angle_sign = determine_sign_of_angle(polygon[0], polygon[3])
+            angle *= angle_sign
         elif a > b:
             draw_first_three_rectangles(img, polygon)
-            ch = max(a,b)
-            cw = min(a,b)
+            cw = max(a,b)
+            ch = min(a,b)
             zero_crtano = (polygon[0][0] + cw/width, polygon[0][1]) #THIS variable is also in the fucked up format that is [0,1]*dimension instead of just a point on the image
-            cv2.circle(img,
-                       (int(width * zero_crtano[0]), int(height * zero_crtano[1])),
-                       5,
-                       (255, 255, 255),
-                       thickness=3
-                       )
-            nasuprotna = distance_between_two_points(polygon[3], zero_crtano, height, width)
-            #kateta = distance_between_two_points(polygon[1], polygon[0], height, width)
-            kateta = distance_between_two_points(zero_crtano, polygon[0], height, width)
+            nasuprotna = distance_between_two_points(polygon[1], zero_crtano, height, width)
+            kateta = distance_between_two_points(polygon[1], polygon[0], height, width)
             if nasuprotna > kateta:
                 print("sjebana slika idc uopce zasto bmk go next")
                 continue
+            cv2.imshow(image_name, img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             angle = asin(distance_between_two_points(polygon[1], zero_crtano, height, width) /
                       distance_between_two_points(polygon[0], polygon[1], height, width))
-            counter+=1
-            pass
-        #cv2.imshow("slika", img)
-        #cv2.waitKey(0)
-        cv2.putText(img,
-                    str(round(angle, 4)),
+            angle_sign = determine_sign_of_angle(polygon[0], polygon[1])
+            angle *= angle_sign
+        """
+        if display:
+            cv2.circle(img,
+                    (int(width * zero_crtano[0]), int(height * zero_crtano[1])),
+                    5,
+                    (255, 255, 255),
+                    thickness=5
+                    )
+            cv2.putText(img,
+                    str(round(angle, 3)),
                     (int(polygon[0][0] * width), int(polygon[0][1] * height)),
                     cv2.FONT_HERSHEY_COMPLEX,
                     1,
@@ -207,18 +258,7 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
                     cv2.LINE_AA
                     )
 
-        """
-        if object_id != 1:
-            print("ne polica = vjv pozadina il nesto tako")
-            color = (0,255,0)
-        #polygon.append(polygon[0])  # dodaj prvi poligon na kraj da mos crtat crte od x do x+1 tocke
-        if len(polygon) != 4:
-            color = (0,0,255)
-        print(f"poligon mi ima {len(polygon)} tocaka")
-        """
         for i in range(len(polygon)):
-            #print(
-            #    f'crtan od {int(width * polygon[i][0])},{int(height * polygon[i][1])} do {int(width * polygon[i + 1][0])},{int(height * polygon[i + 1][1])}')
             if i == 0:
                 cv2.circle(img,
                               (int(width * polygon[0][0]), int(height * polygon[0][1])),
@@ -233,34 +273,29 @@ for image_name in tqdm(list(four_point_polygon_images.keys())):
                               (0,0,255),
                            thickness=5
                               )
-            """if i == 2:
+            if i == 2:
                 cv2.circle(img,
                               (int(width * polygon[2][0]), int(height * polygon[2][1])),
                               5,
                               (0,0,255),
                            thickness=5
-                             )"""
+                             )
             cv2.line(img,
-                     (int(width * polygon[i - 1][0]), int(height * polygon[i - 1][1])),
-                     (int(width * polygon[i][0]), int(height * polygon[i][1])),
+                     (int(width * polygon_unsorted[i - 1][0]), int(height * polygon_unsorted[i - 1][1])),
+                     (int(width * polygon_unsorted[i][0]), int(height * polygon_unsorted[i][1])),
                      color, 3
                      )
 
-        #iz a i b mogu skuzit u kojen smjeru je crtan bbox ? a > b ili a<b
-        #angle = ???
-        xml_annotations.append([str(cx), str(cy), str(int(cw)), str(int(ch)), str(round(angle,7))])
-    if b > a or len(xml_annotations) == 0:
-        #TODO: clockwise ne clockwise anotacije
-        continue
+        if not something_weird_happened:
+            xml_annotations.append([str(cx), str(cy), str(int(cw)), str(int(ch)), str(round(angle,7))])
     #write the image i havent been drawing on to the disk =:)
-    img_written = cv2.imread(f'train1/{image_name}')
-    cv2.imwrite(os.path.join(images_foldername, f"{image_name}.bmp"), img_written)
-    write_xml_annotations(xml_annotations, image_name, width, height)
+    if not something_weird_happened:
+        img_written = cv2.imread(f'train1/{image_name}')
+        cv2.imwrite(os.path.join(images_foldername, f"{image_name}.bmp"), img_written)
+        write_xml_annotations(xml_annotations, image_name, width, height)
     if display:
         cv2.imshow(image_name, img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-
-print(counter)
 generate_trainval_files()
 
