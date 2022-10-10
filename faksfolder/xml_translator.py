@@ -113,10 +113,18 @@ this function hopes to standardise the polygons point and the order theyre in
 """
 
 
+
+#TODO: ako poligon ima 5 tocaka idk bmk odjebi ga skroz
+#CVAT annotations were done by me in a consitent order: top left->bottom left->bottom right->top right
 def sort_polygon_points_CVAT(points):
+    sorted_points = []
     temp_points = points.split(";")
-    print(temp_points)
-    pass
+    for point_pair in temp_points:
+        x = round(float(point_pair.split(',')[0]))
+        y = round(float(point_pair.split(',')[1]))
+        sorted_points.append((x,y))
+    print(sorted_points)
+    return sorted_points
 
 #mozda drugaciji sort polygon points koji to malo bolje radi ovoga sjebu mali poligoni koji su blizu ishodista zna bit inkonzistentno
 def sort_polygon_points(points, h, w):
@@ -153,10 +161,6 @@ def draw_first_three_rectangles(img, polygon):
 
 
 counter = 0
-#train_file1 = pd.read_csv('retail50k_train_1.csv')
-#train_file2 = pd.read_csv('retail50k_train_2.csv')
-#train_file = pd.concat([train_file1, train_file2])
-# DICTIONARY LIKE link : (poligon, productID)
 images_foldername = "data"
 annotations = ET.parse('annotations.xml')
 root = annotations.getroot()
@@ -166,10 +170,18 @@ for child in root:
         continue
     image_info = child.attrib
     image_name = image_info['name']
+    image_width = image_info['width']
+    image_height = image_info['height']
     img = cv2.imread(f'data/{image_name}')
     for polygon in child:
         points = polygon.attrib['points']
         points_sorted = sort_polygon_points_CVAT(points)
+        cx = int(sum([point[0] for point in points_sorted])/4)
+        cy = int(sum([point[1] for point in points_sorted])/4)
+        ch = int(sqrt(pow(points_sorted[0][0] - points_sorted[1][0], 2) + pow(points_sorted[0][1] - points_sorted[1][1], 2)))
+        cw = int(sqrt(pow(points_sorted[1][0] - points_sorted[2][0], 2) + pow(points_sorted[1][1] - points_sorted[2][1], 2)))
+        #TODO: kut je nagib izmedu prve i trece tocke
+        print(f"Cx, cy = ({cx}, {cy}) cw: {cw} ch:{ch}")
         print(polygon.tag, polygon.attrib)
 display = False
 exit()
