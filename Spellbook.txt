@@ -1,0 +1,21 @@
+
+DAFNE:
+    evaluation naredba: 
+    ./tools/run.py --gpus 0 --config-file ./configs/ --eval-only --output-dir testrun --opts "MODEL.WEIGHTS ./weights/model_350k_cioublabla.pth" 
+    trening narebda:
+    ./tools/run.py --gpus 0 --config-file ./configs/hrsc/base.yaml --tag imeexp
+
+
+docker container run najnoviji pytorch container
+docker run -it -p 10123:8888 -p 10124:6006 --rm --shm-size="64g" --gpus device=0 --name=$(whoami) -v ~/work:/work -v ~/data:/data pytorch/pytorch:latest
+
+ssh -p 443 -L 10123:localhost:10123 6006:localhost:6006 jmatijevic@zver5.zesoi.fer.hr
+jupiter: 
+jupyter-lab --ip 0.0.0.0 --port 8888 --allow-root
+tensorboard --logdir runs/train/ --host 0.0.0.0
+
+
+
+SSH kljucevi:
+ssh keygen - napravi .pub file
+ssh-copy-id -i /home/jere/.ssh/id_rsa.pub jmatijevic@zver8.zesoi.fer.hr -p 443 -- kopiraj svoj pub file na server i gg
