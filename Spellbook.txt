@@ -8,9 +8,10 @@ DAFNE:
 
 docker container run najnoviji pytorch container
 docker run -it -p 10123:8888 -p 10124:6006 --rm --shm-size="64g" --gpus device=0 --name=$(whoami) -v ~/work:/work -v ~/data:/data pytorch/pytorch:latest
+
 yolov7 docker
-nvidia-docker run --name yolov7 -it -v your_coco_path/:/coco/ -v your_code_path/:/yolov7 --shm-size=64g nvcr.io/nvidia/pytorch:21.08-py3
-docker run --name jmatijevic-yolov7 -it -v ~/work:/work -v ~/data:/data --shm-size=64g --gpus device=0 nvcr.io/nvidia/pytorch:21.08-py3
+docker run --name jmatijevic-yolov7 -it -v ~/work:/work -v ~/data:/data --shm-size=64g --gpus '"device=0,1"' nvcr.io/nvidia/pytorch:21.08-py3
+
 
 ssh -p 443 -L 10123:localhost:10123 -L 6006:localhost:6006 jmatijevic@zver5.zesoi.fer.hr
 jupiter: 
