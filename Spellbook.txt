@@ -6,6 +6,13 @@ DAFNE:
     ./tools/run.py --gpus 0 --config-file ./configs/hrsc/base.yaml --tag imeexp
 
 
+YOLOV5:
+    training:
+    python train.py --img 1024 --batch 8 --epochs 700 --data police1.yaml --cache --cfg "models/yolov5l.yaml" --name "yolo5L500ep_10_anchora_box05"         --optimizer SGD --cos-lr --hyp data/hyps/hyp_retail10k.yaml --bbox_interval 200
+    eval:
+    python val.py --weights yolov5s.pt --data coco128.yaml --img 640
+    
+
 docker container run najnoviji pytorch container
 docker run -it -p 10123:8888 -p 10124:6006 --rm --shm-size="64g" --gpus device=0 --name=$(whoami) -v ~/work:/work -v ~/data:/data pytorch/pytorch:latest
 
