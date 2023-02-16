@@ -8,7 +8,7 @@ DAFNE:
 
 YOLOV5:
     training:
-    python train_jere.py --img 1024 --batch 8 --epochs 700 --data police1.yaml --cache --cfg "models/yolov5l.yaml" --name "yolo5L500ep_10_anchora_box05"      --optimizer SGD --cos-lr --hyp data/hyps/hyp_retail10k.yaml --bbox_interval 200
+        python train_jere.py --img 1024 --batch 8 --epochs 500 --data retail10k.yaml --cache --cfg "models/yolov5n.yaml" --name "slike_SGD_yolov5n_500ep" --optimizer SGD --cos-lr --hyp data/hyps/hyp_retail10k.yaml --bbox_interval 200
     python train.py --img 1024 --batch 8 --epochs 200 --data retailcloud.yaml --cfg "models/yolov5l.yaml" --name "retailcloud_transferlearn_adam_200epoha" --weights runs/train/yolo5L700ep_20anchors_sgd_cos_lr/weights/best.pt --optimizer Adam --hyp data/hyps/hyp_retail10k.yaml
     5D naredba
     python train_jere.py --img 1024 --batch 8 --epochs 200 --data data/police_5dim.yaml --cfg "models/yolov5s.yaml" --name "rgbdc_test" --optimizer SGD --cos-lr --hyp data/hyps/hyp_retail10k_5dim.yaml --cache disk
