@@ -38,4 +38,5 @@ tensorboard --logdir runs/train/ --host 0.0.0.0
 
 SSH kljucevi:
 ssh keygen - napravi .pub file
-ssh-copy-id -i /home/jere/.ssh/id_rsa.pub jmatijevic@zver8.zesoi.fer.hr -p 443 -- kopiraj svoj pub file na server i gg
+ssh-copy-id -i /home/jere/.ssh/id_rsa.pub -p 443 jmatijevic@zver8.zesoi.fer.hr -- kopiraj svoj pub file na server i gg
+ssh-copy-id -i /c/Users/jere/.ssh/id_rsa.pub -p 443 jmatijevic@zver4.zesoi.fer.hr #windows
