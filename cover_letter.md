@@ -1,7 +1,13 @@
-Hello, my name is Jeronim, I'm currently working on my a master's degree in computer science with plans of enrolling in a phd program at the Faculty of electrical engineering and computing, Zagreb, which as far as Croatia is concerned is the best university for computer science students.
+Dear Google recruiting team, my name is Jeronim, I'm currently working on my a master's degree in computer science with plans of enrolling in a phd program at the Faculty of electrical engineering and computing, Zagreb, which as far as Croatia is concerned is the best university for computer science students.
 I will try to keep this letter as short as i can but I'm not sure if i will succeed.
 
-For the past 1 year of my life i have worked as a young researcher at FER, Zagreb on the SOVA project which is a collaboration between academy and industry with a company called cloudonia. 4 other researchers and myself have helped them develop solutions for inventory management in retail environments using computer vision. For the past 6 months i have worked on shelf detection. In our case, the main goal of shelf detection was to determine the ordinal number of the shelf on which the product is placed on (most bottom shelf (first), middle shelf (second), ...) - exact and precise localization of those shelves wasn't necessary.
+#ZASTO JE GUGLE SAVRSENO MISTO ZA MENE
+#ZASTO SAN JA SAVRSEN LIK ZA GUGL
+I am writing to express my strong interest in the student research internship program at Google. As a highly knowledgeable and ambitious computer science student, I am convinced that Google is the ideal place for me to further my career and achieve my goals.
+
+For the past 1 year of my life i have worked as a young researcher at FER, Zagreb on the SOVA project which is a collaboration between academy and industry with a company called cloudonia. 4 other researchers and myself have helped them develop solutions for inventory management in retail environments using computer vision. 
+the paragraphs below briefly explain a part of my research and represent my ideas for future work coming into this internship.
+For the past 6 months i have worked on shelf detection. In our case, the main goal of shelf detection was to determine the ordinal number of the shelf on which the product is placed on (most bottom shelf (first), middle shelf (second), ...) - exact and precise localization of those shelves wasn't necessary.
 
 For that reason mAP wasn't exactly the right metric for this specific use case of object detection, i have proposed a new LoGT [1] evaluation metric. LoGT represent the predicted bounding box as a line, and if that line crosses the ground truth bounding box i declare loss to be 0, otherwise it's 1. keep in mind this is purely and evaluation metric and training is still done using CIoU.
 This is a very simple 1-class object detection problem where even the simplest yolov network configuration achieves great results but requires a "large" amount of parameters.
