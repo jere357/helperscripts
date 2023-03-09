@@ -21,6 +21,5 @@ I have recently began work on a new method of object detection in general which 
 
 3. applying the fourier transform to images to construct potentially powerful channel features. As part of my research i have also read serveral papers that use NeRFs. Inspired by the way Mildenhall et al. use positional encoding in chapter 5.1 (https://arxiv.org/pdf/2003.08934.pdf) i would like to try out a similair approach - but for object detection.
 
-  Unfortunately due to purely bureaucratic reasons I'm unable to continue my employment as a researcher at my university. My mentors have done all they can and have graciously extended my access to the department's hardware and resources, but since i am a human being that relies on luxuries such as food, water, and a place to sleep - this is not something i feel is doable while unemployed, and i think google is the perfect place for doing research like this. If you made it this far into this cover essay i congratulate you and hope to hear from you soon. ĆB, JM
 
 [1] - Line over ground truth metric; source code: https://github.com/jere357/yolov5-RGBD/blob/39ad3cfa5782b5c1aba1cda3b47b7ae2ac9d1b2d/val_jere.py#L524 fell free to contact me by mail if you wanna talk about it - keep in mind this is all still a work in progress :)
