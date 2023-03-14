@@ -24,8 +24,9 @@ I have recently begun work on a new method of object detection in general which 
 
 3. applying the Fourier transform to images to construct potentially powerful channel features. As part of my research, I have also read several papers that use NeRFs. Inspired by the way Mildenhall et al. use positional encoding in chapter 5.1 (https://arxiv.org/pdf/2003.08934.pdf) I would like to try out a similar approach - but for object detection.
 
-I feel like a similar approach is being done by controlnet[2] the way they kinda nudge the network towards what they want it to do - i think same results could be achieved in object detection networks as well
+I feel like a similar approach is being done by controlnet [2] the way they kinda nudge the network towards what they want it to do - i think same results could be achieved in object detection networks as well
 
 If you made it this far into this cover essay I congratulate you and hope to hear from you soon. ĆB, JM
 
 [1] - Line over ground truth metric; source code: https://github.com/jere357/yolov5-RGBD/blob/39ad3cfa5782b5c1aba1cda3b47b7ae2ac9d1b2d/val_jere.py#L524 fell free to contact me by mail if you wanna talk about it - please keep in mind this is all still a work in progress :)
+[2] - Lvmin Zhang and Maneesh Agrawala, Adding Conditional Control to Text-to-Image Diffusion Models https://arxiv.org/pdf/2302.05543.pdf
