@@ -27,8 +27,10 @@ I have recently begun work on a new method of object detection in general which 
 4. Sobel features - maybe something interesting could be achieved by applying a sobel operator to the input image - also can be a learnable parameter if it seems like something worth exploring
 
 
-I feel like a similar approach is being done by controlnet [2] the way they kinda nudge the network towards what they want it to do - i think same results could be achieved in object detection networks as well
+I feel like a similar approach is being done by controlnet [3 the way they kinda nudge the network towards what they want it to do - i think same results could be achieved in object detection networks as well
 
 [1] - Line over ground truth metric; source code: https://github.com/jere357/yolov5-RGBD/blob/39ad3cfa5782b5c1aba1cda3b47b7ae2ac9d1b2d/val_jere.py#L524 fell free to contact me by mail if you wanna talk about it - please keep in mind this is all still a work in progress :)
 
-[2] - Lvmin Zhang and Maneesh Agrawala, Adding Conditional Control to Text-to-Image Diffusion Models https://arxiv.org/pdf/2302.05543.pdf
+[2] - Ben Mildenhall et. al, NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis https://arxiv.org/pdf/2003.08934.pdf
+
+[3] - Lvmin Zhang and Maneesh Agrawala, Adding Conditional Control to Text-to-Image Diffusion Models https://arxiv.org/pdf/2302.05543.pdf
