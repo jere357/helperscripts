@@ -20,7 +20,7 @@ I have recently begun work on a new method of object detection in general which 
 
 1. Estimated depth RGB->RGBD (1024x1024x3 input ->1024x1024x4 input), as part of my research I've read many papers that focus on networks for monocular depth estimation such as this one http://yaksoy.github.io/highresdepth/ and I think it would be interesting to use estimated depth as a channel feature in object detection; also open for consideration is applying simple image thresholding to this depth map, the threshold can be a hyperparameter or maybe even a learnable parameter in the network somehow, that would require a slightly different approach.
 
-2. Applying the Fourier transform to images to construct potentially powerful channel features. As part of my research, I have also read several papers that use NeRFs. Inspired by the way Mildenhall et al. use positional encoding in chapter 5.1 (https://arxiv.org/pdf/2003.08934.pdf) I would like to try out a similar approach - but for object detection.
+2. Applying the Fourier transform to images to construct potentially powerful channel features. As part of my research, I have also read several papers that use NeRFs. Inspired by the way Mildenhall et al. use positional encoding in chapter 5.1 in the NeRF paper[2] I would like to try out a similar approach - but for object detection.
 
 3. Canny edge feature RGB->RGBC, applying the canny edge algorithm on an image and using that grayscale image as a feature, this is my least favorite feature of the 3 but I think it still has enough potential to warrant experiments.
 
