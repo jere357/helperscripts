@@ -8,7 +8,7 @@ Over the past six years, I have developed a keen interest in artificial intellig
 For the past year, I have worked as a young researcher with the image processing group at FER, Zagreb on a project which was a collaboration between academia and industry with a company called Cloudonia. The team was composed of three professors and four other researchers. We have helped them develop solutions for inventory management in retail environments using computer vision.
 
 
-The paragraphs below briefly explain a part of my research and represent my ideas for future work if I am to become a student researcher.
+**The paragraphs below briefly explain a part of my research and represent my ideas for future work if I am to become a student researcher.**
 
 For the past 6 months, I have worked on shelf detection as my task on this project. In our case, the main goal of shelf detection in their pipeline is to determine the ordinal number of the shelf on which the product is placed on (most bottom shelf (first), middle shelf (second), ...). We have tried to apply some traditional computer vision methods to this problem but none of them proved to be robust enough to be used in an "in-the-wild" environment such as a store. Exact and precise localization of the shelf bounding boxes wasn't necessary.
 
