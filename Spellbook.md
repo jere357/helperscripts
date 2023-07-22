@@ -47,7 +47,14 @@ jupyter-lab --ip 0.0.0.0 --port 8888 --allow-root
 tensorboard --logdir runs/train/ --host 0.0.0.0
 
 # dreambooth
-docker run -it -p 10125:8888 -p 10126:6006 --rm --shm-size="64g" --gpus all --name=$(whoami)-nvcr -v ~/work:/work -v ~/data:/data jmatijevic_dreambooth
+docker run -it -p 10124:6006 --rm --shm-size="64g" --gpus all --name=$(whoami)-nvcr -v ~/work:/work -v ~/data:/data jmatijevic_dreambooth
+
+export MODEL_NAME="CompVis/stable-diffusion-v1-4"
+export INSTANCE_DIR="/data/ml10_cropped"
+export CLASS_DIR="/data/CL"
+export OUTPUT_DIR="/work/dreambooth/livaja_rez"
+
+accelerate launch train_dreambooth.py --pretrained_model_name_or_path=$MODEL_NAME  --instance_data_dir=$INSTANCE_DIR --class_data_dir=$CLASS_DIR --output_dir=$OUTPUT_DIR --with_prior_preservation --prior_loss_weight=1.0 --instance_prompt="a photo of a sks soccer player" --class_prompt="a photo of a soccer player" --resolution=1024 --train_batch_size=8 --gradient_accumulation_steps=1 --learning_rate=5e-6 --lr_scheduler="constant" --lr_warmup_steps=10 --num_class_images=242 --max_train_steps=800 --center_crop --dataloader_num_workers 8 --report_to "tensorboard" --pre_compute_text_embeddings
 
 # SSH kljucevi:
 ssh keygen - napravi .pub file
