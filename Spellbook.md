@@ -60,6 +60,8 @@ export OUTPUT_DIR="/work/dreambooth/livaja_rez"
 
 accelerate launch train_dreambooth.py --pretrained_model_name_or_path=$MODEL_NAME  --instance_data_dir=$INSTANCE_DIR --class_data_dir=$CLASS_DIR --output_dir=$OUTPUT_DIR --with_prior_preservation --prior_loss_weight=1.0 --instance_prompt="a photo of a sks soccer player" --class_prompt="a photo of a soccer player holding a trophy" --resolution=512 --train_batch_size=8 --gradient_accumulation_steps=1 --learning_rate=5e-6 --lr_scheduler="constant" --lr_warmup_steps=10 --num_class_images=242 --max_train_steps=2000 --center_crop --dataloader_num_workers 8 --report_to "tensorboard" --train_text_encoder
 
+accelerate launch train_dreambooth.py --pretrained_model_name_or_path=$MODEL_NAME  --instance_data_dir=$INSTANCE_DIR --class_data_dir=$CLASS_DIR --output_dir=$OUTPUT_DIR --with_prior_preservation --prior_loss_weight=1.0 --instance_prompt="a photo of a sks soccer player" --class_prompt="a photo of a soccer player holding UEFA champion's league trophy" --resolution=512 --train_batch_size=8 --gradient_accumulation_steps=1 --learning_rate=2e-6 --lr_scheduler="constant" --lr_warmup_steps=20 --num_class_images=24 --max_train_steps=2400 --dataloader_num_workers 8 --report_to "tensorboard" --train_text_encoder --center_crop --checkpoints_total_limit=2
+
 # SSH kljucevi:
 ssh keygen - napravi .pub file
 
