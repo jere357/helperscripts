@@ -45,4 +45,4 @@ jobs:
           push: true 
           tags: latest
           #no-cache: true
-          labels: ${{steps.meta.outputs.labels}}
+          labels: jebimater
