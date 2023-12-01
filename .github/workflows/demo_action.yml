@@ -1,0 +1,16 @@
+name: actions demo
+run-name: ${{ github.actor }} testing actions
+on: [push]
+jobs:
+  Explore-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "this job is running on ${{runner.os}}"
+      - run: echo "branch is ${{github.ref}} and repo is ${{github.repository}}"
+      - name: Checkout repo code
+        uses: actions/checkout@v4
+      - run: echo "the ${{ github.repository }} repo has been cloned to the runner."
+      -name: List files
+        run: ls ${{ github.workspace }}
+      -run: echo "this job status is ${{ job.status }}"
