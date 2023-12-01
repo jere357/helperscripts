@@ -41,7 +41,6 @@ jobs:
         with:
           context: .
           file: dockerfiles/cuda120/Dockerfile
-          push: true 
-          tags: latest
-          #no-cache: true
-          labels: jebimater
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
