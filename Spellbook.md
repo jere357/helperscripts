@@ -1,3 +1,5 @@
+https://docs.google.com/presentation/d/1o908FlzGE0InSQPqUMgLarzujLVEp5lXjuq4qggCKsE/edit#slide=id.g2ad8c5a11ca_0_10
+
 
 # DAFNE:
     evaluation naredba: 
